@@ -1,18 +1,36 @@
+import Link from "next/link";
+import { searchVideos } from "@/lib/youtube";
+
 interface HomeProps {
   searchParams?: {
     q?: string | string[];
   };
 }
 
-export default function Home({ searchParams }: HomeProps) {
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export default async function Home({ searchParams }: HomeProps) {
   const rawQuery = searchParams?.q;
   const query = Array.isArray(rawQuery) ? rawQuery[0] : rawQuery;
   const trimmedQuery = query?.trim() ?? "";
   const hasQuery = trimmedQuery.length > 0;
 
+  const searchResults = hasQuery ? await searchVideos(trimmedQuery) : [];
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-6 py-10 text-zinc-50">
-      <div className="w-full max-w-2xl space-y-6 rounded-2xl border border-zinc-800 bg-zinc-900 px-6 py-8 shadow-lg">
+      <div className="w-full max-w-4xl space-y-8 rounded-2xl border border-zinc-800 bg-zinc-900 px-6 py-8 shadow-lg">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-widest text-zinc-400">Nalgo Tube</p>
           <h1 className="text-2xl font-bold text-zinc-50">영상 검색</h1>
@@ -42,15 +60,47 @@ export default function Home({ searchParams }: HomeProps) {
 
         <section className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-6 text-sm text-zinc-200">
           {hasQuery ? (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-emerald-400">
-                검색어
-              </p>
-              <p className="text-lg font-semibold text-zinc-50">“{trimmedQuery}”</p>
-              <p className="text-sm text-zinc-400">
-                이 검색어로 영상을 찾아볼게요. (검색 결과 로직을 추가하세요.)
-              </p>
-            </div>
+            searchResults.length > 0 ? (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-widest text-emerald-400">검색 결과</p>
+                  <p className="text-lg font-semibold text-zinc-50">“{trimmedQuery}”</p>
+                  <p className="text-sm text-zinc-400">총 {searchResults.length}개의 영상을 찾았어요.</p>
+                </div>
+
+                <ul className="space-y-4">
+                  {searchResults.map((video) => (
+                    <li key={video.videoId} className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
+                      <Link
+                        href={`/watch/${video.videoId}`}
+                        className="flex flex-col gap-4 p-4 transition hover:bg-zinc-900/70 sm:flex-row"
+                      >
+                        <div className="aspect-video w-full max-w-xs overflow-hidden rounded-md bg-zinc-900">
+                          {video.thumbnailUrl ? (
+                            <img
+                              src={video.thumbnailUrl}
+                              alt={video.title}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-xs text-zinc-500">No Thumbnail</div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-1 flex-col gap-2">
+                          <h2 className="text-lg font-semibold text-zinc-50 line-clamp-2">{video.title}</h2>
+                          <p className="text-sm text-zinc-400">{video.channelTitle}</p>
+                          <p className="text-xs text-zinc-500">{formatDate(video.publishedAt)}</p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="text-center text-zinc-400">검색 결과가 없어요.</div>
+            )
           ) : (
             <p className="text-center text-zinc-400">검색해서 영상을 찾아보세요</p>
           )}

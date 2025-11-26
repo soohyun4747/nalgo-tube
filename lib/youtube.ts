@@ -52,7 +52,7 @@ function buildUrl(path: string, params: Record<string, string>): string {
     url.searchParams.set(key, value);
   });
 
-  url.searchParams.set("key", apiKey);
+  url.searchParams.set("key", apiKey!);
 
   return url.toString();
 }

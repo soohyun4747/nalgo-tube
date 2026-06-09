@@ -111,7 +111,7 @@ export default function VideoList({
 
   if (videos.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-8 text-center text-sm text-zinc-400">
+      <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
         {emptyMessage}
       </p>
     );
@@ -123,13 +123,13 @@ export default function VideoList({
         {videos.map((video) => (
           <li
             key={video.videoId}
-            className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950"
+            className="overflow-hidden rounded-lg border border-slate-200 bg-white"
           >
             <Link
               href={`/watch/${video.videoId}`}
-              className="flex flex-col gap-4 p-4 transition hover:bg-zinc-900/70 sm:flex-row"
+              className="flex flex-col gap-4 p-4 transition hover:bg-slate-100/70 sm:flex-row"
             >
-              <div className="aspect-video w-full max-w-xs overflow-hidden rounded-md bg-zinc-900">
+              <div className="aspect-video w-full max-w-xs overflow-hidden rounded-md bg-slate-100">
                 {video.thumbnailUrl ? (
                   <img
                     src={video.thumbnailUrl}
@@ -138,20 +138,20 @@ export default function VideoList({
                     loading="lazy"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-zinc-500">
+                  <div className="flex h-full items-center justify-center text-xs text-slate-500">
                     No Thumbnail
                   </div>
                 )}
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <h3 className="text-lg font-semibold text-zinc-50 line-clamp-2">
+                <h3 className="text-lg font-semibold text-slate-950 line-clamp-2">
                   {he.decode(video.title)}
                 </h3>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-slate-500">
                   {he.decode(video.channelTitle)}
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-slate-500">
                   {formatDate(video.publishedAt)}
                 </p>
               </div>
@@ -162,11 +162,11 @@ export default function VideoList({
 
       <div ref={loadMoreRef} className="min-h-8">
         {loadingMore && (
-          <p className="py-2 text-center text-zinc-400">더 불러오는 중...</p>
+          <p className="py-2 text-center text-slate-500">더 불러오는 중...</p>
         )}
-        {errorMsg && <p className="py-2 text-center text-red-400">{errorMsg}</p>}
+        {errorMsg && <p className="py-2 text-center text-red-600">{errorMsg}</p>}
         {!loadingMore && !nextPageToken && (
-          <p className="py-2 text-center text-zinc-500">
+          <p className="py-2 text-center text-slate-500">
             마지막 영상입니다.
           </p>
         )}

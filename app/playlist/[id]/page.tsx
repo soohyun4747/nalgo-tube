@@ -20,30 +20,30 @@ export default async function PlaylistPage({
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-50">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+    <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
         <Link
           href="/"
-          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-500"
         >
           ← 검색으로 돌아가기
         </Link>
 
         <section className="space-y-5">
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
               Playlist
             </p>
-            <h1 className="text-2xl font-bold leading-tight text-zinc-50">
+            <h1 className="text-2xl font-bold leading-tight text-slate-950">
               {he.decode(playlist.title)}
             </h1>
             {playlist.description && (
-              <p className="max-w-3xl text-sm leading-6 text-zinc-300 line-clamp-3">
+              <p className="max-w-3xl text-sm leading-6 text-slate-600 line-clamp-3">
                 {he.decode(playlist.description)}
               </p>
             )}
-            <p className="text-sm text-zinc-400">
-              릴스를 제외한 영상을 계속 불러올 수 있어요.
+            <p className="text-sm text-slate-500">
+              쇼츠와 릴스를 제외한 영상을 계속 불러올 수 있어요.
             </p>
           </div>
 
@@ -60,10 +60,10 @@ export default async function PlaylistPage({
 
         <section className="space-y-4">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-widest text-zinc-500">
+            <p className="text-xs uppercase tracking-widest text-slate-500">
               Videos
             </p>
-            <h2 className="text-xl font-semibold text-zinc-50">
+            <h2 className="text-xl font-semibold text-slate-950">
               플레이리스트 영상
             </h2>
           </div>

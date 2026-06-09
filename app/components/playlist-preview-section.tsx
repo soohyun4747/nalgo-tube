@@ -92,27 +92,27 @@ export default function PlaylistPreviewSection({
     <section ref={sectionRef} className="space-y-3">
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0 space-y-1">
-          <h3 className="truncate text-base font-semibold text-zinc-50">
+          <h3 className="truncate text-base font-semibold text-slate-950">
             {he.decode(playlist.title)}
           </h3>
-          <p className="text-xs text-zinc-500">{playlist.itemCount}개 영상</p>
+          <p className="text-xs text-slate-500">{playlist.itemCount}개 영상</p>
         </div>
         <Link
           href={`/playlist/${playlist.playlistId}`}
-          className="shrink-0 rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-zinc-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+          className="shrink-0 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
         >
           모두 재생
         </Link>
       </div>
 
       {loading && (
-        <div className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-8 text-center text-sm text-zinc-400">
+        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
           영상 불러오는 중...
         </div>
       )}
 
       {!loading && errorMsg && (
-        <div className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-8 text-center text-sm text-red-400">
+        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-red-600">
           {errorMsg}
         </div>
       )}
@@ -123,9 +123,9 @@ export default function PlaylistPreviewSection({
             <Link
               key={video.videoId}
               href={`/watch/${video.videoId}`}
-              className="w-56 shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition hover:bg-zinc-900/70"
+              className="w-56 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:bg-slate-100/70"
             >
-              <div className="aspect-video overflow-hidden bg-zinc-900">
+              <div className="aspect-video overflow-hidden bg-slate-100">
                 {video.thumbnailUrl ? (
                   <img
                     src={video.thumbnailUrl}
@@ -134,13 +134,13 @@ export default function PlaylistPreviewSection({
                     loading="lazy"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-zinc-500">
+                  <div className="flex h-full items-center justify-center text-xs text-slate-500">
                     No Thumbnail
                   </div>
                 )}
               </div>
               <div className="p-3">
-                <p className="text-sm font-semibold leading-5 text-zinc-50 line-clamp-2">
+                <p className="text-sm font-semibold leading-5 text-slate-950 line-clamp-2">
                   {he.decode(video.title)}
                 </p>
               </div>
@@ -150,7 +150,7 @@ export default function PlaylistPreviewSection({
       )}
 
       {!loading && !errorMsg && hasLoaded && videos.length === 0 && (
-        <div className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-6 text-center text-sm text-zinc-400">
+        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
           미리 볼 영상이 없어요.
         </div>
       )}

@@ -31,7 +31,7 @@ export default function HorizontalScroll({
         type="button"
         aria-label={`${label} 왼쪽으로 이동`}
         onClick={() => scrollByPage(-1)}
-        className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-700 bg-zinc-950/95 text-xl font-semibold text-zinc-50 shadow-lg transition hover:border-emerald-500 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+        className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
       >
         ‹
       </button>
@@ -45,7 +45,7 @@ export default function HorizontalScroll({
         type="button"
         aria-label={`${label} 오른쪽으로 이동`}
         onClick={() => scrollByPage(1)}
-        className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-700 bg-zinc-950/95 text-xl font-semibold text-zinc-50 shadow-lg transition hover:border-emerald-500 hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+        className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
       >
         ›
       </button>

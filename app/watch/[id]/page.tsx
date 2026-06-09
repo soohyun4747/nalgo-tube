@@ -25,11 +25,11 @@ export default async function WatchPage({
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-50">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+    <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
         <Link
           href="/"
-          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-500"
         >
           ← 뒤로가기
         </Link>
@@ -45,13 +45,13 @@ export default async function WatchPage({
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-2xl font-bold leading-tight text-zinc-50">
+          <h1 className="text-2xl font-bold leading-tight text-slate-950">
             {video.title}
           </h1>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-slate-500">
             {video.channelTitle} · {formatDate(video.publishedAt)}
           </p>
-          <p className="text-sm leading-relaxed text-zinc-200 line-clamp-10">
+          <p className="text-sm leading-relaxed text-slate-700 line-clamp-10">
             {video.description}
           </p>
         </div>

@@ -1,17 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import he from 'he';
-import { getChannelDetail, getChannelVideos } from '@/lib/youtube';
-
-function formatDate(iso: string) {
-  if (!iso) return '';
-  const date = new Date(iso);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
+import {
+  getChannelDetail,
+  getChannelPlaylists,
+  getPlaylistVideosPage,
+} from '@/lib/youtube';
+import VideoList from '@/app/components/video-list';
 
 export default async function ChannelPage({
   params,
@@ -19,14 +14,18 @@ export default async function ChannelPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [channel, videos] = await Promise.all([
-    getChannelDetail(id),
-    getChannelVideos(id),
-  ]);
+  const channel = await getChannelDetail(id);
 
   if (!channel) {
     notFound();
   }
+
+  const [videos, playlists] = await Promise.all([
+    channel.uploadsPlaylistId
+      ? getPlaylistVideosPage(channel.uploadsPlaylistId)
+      : { videos: [], nextPageToken: null },
+    getChannelPlaylists(id),
+  ]);
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-50">
@@ -65,6 +64,14 @@ export default async function ChannelPage({
                 {he.decode(channel.description)}
               </p>
             )}
+            {channel.uploadsPlaylistId && (
+              <Link
+                href={`/playlist/${channel.uploadsPlaylistId}`}
+                className="inline-flex w-fit rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+              >
+                전체 업로드 재생
+              </Link>
+            )}
           </div>
         </section>
 
@@ -74,26 +81,53 @@ export default async function ChannelPage({
               Videos
             </p>
             <h2 className="text-xl font-semibold text-zinc-50">
-              채널 최신 영상
+              채널 전체 영상
+            </h2>
+            <p className="text-sm text-zinc-400">
+              릴스를 제외한 전체 업로드를 계속 불러올 수 있어요.
+            </p>
+          </div>
+
+          {channel.uploadsPlaylistId ? (
+            <VideoList
+              playlistId={channel.uploadsPlaylistId}
+              initialVideos={videos.videos}
+              initialNextPageToken={videos.nextPageToken}
+              emptyMessage="표시할 영상이 없어요."
+            />
+          ) : (
+            <p className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-8 text-center text-sm text-zinc-400">
+              표시할 영상이 없어요.
+            </p>
+          )}
+        </section>
+
+        <section className="space-y-4 border-t border-zinc-800 pt-8">
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-widest text-zinc-500">
+              Playlists
+            </p>
+            <h2 className="text-xl font-semibold text-zinc-50">
+              채널 플레이리스트
             </h2>
           </div>
 
-          {videos.length > 0 ? (
-            <ul className="space-y-4">
-              {videos.map((video) => (
+          {playlists.length > 0 ? (
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {playlists.map((playlist) => (
                 <li
-                  key={video.videoId}
+                  key={playlist.playlistId}
                   className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950"
                 >
                   <Link
-                    href={`/watch/${video.videoId}`}
-                    className="flex flex-col gap-4 p-4 transition hover:bg-zinc-900/70 sm:flex-row"
+                    href={`/playlist/${playlist.playlistId}`}
+                    className="block transition hover:bg-zinc-900/70"
                   >
-                    <div className="aspect-video w-full max-w-xs overflow-hidden rounded-md bg-zinc-900">
-                      {video.thumbnailUrl ? (
+                    <div className="aspect-video overflow-hidden bg-zinc-900">
+                      {playlist.thumbnailUrl ? (
                         <img
-                          src={video.thumbnailUrl}
-                          alt={video.title}
+                          src={playlist.thumbnailUrl}
+                          alt={playlist.title}
                           className="h-full w-full object-cover"
                           loading="lazy"
                         />
@@ -103,17 +137,23 @@ export default async function ChannelPage({
                         </div>
                       )}
                     </div>
-
-                    <div className="flex flex-1 flex-col gap-2">
-                      <h3 className="text-lg font-semibold text-zinc-50 line-clamp-2">
-                        {he.decode(video.title)}
-                      </h3>
-                      <p className="text-sm text-zinc-400">
-                        {he.decode(video.channelTitle)}
-                      </p>
-                      <p className="text-xs text-zinc-500">
-                        {formatDate(video.publishedAt)}
-                      </p>
+                    <div className="space-y-3 p-4">
+                      <div className="space-y-2">
+                        <h3 className="text-base font-semibold text-zinc-50 line-clamp-2">
+                          {he.decode(playlist.title)}
+                        </h3>
+                        {playlist.description && (
+                          <p className="text-sm leading-6 text-zinc-400 line-clamp-2">
+                            {he.decode(playlist.description)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                        <span>{playlist.itemCount}개 영상</span>
+                        <span className="rounded-md bg-emerald-500 px-2.5 py-1 font-semibold text-zinc-950">
+                          모두 재생
+                        </span>
+                      </div>
                     </div>
                   </Link>
                 </li>
@@ -121,7 +161,7 @@ export default async function ChannelPage({
             </ul>
           ) : (
             <p className="rounded-lg border border-dashed border-zinc-800 bg-zinc-950/40 px-4 py-8 text-center text-sm text-zinc-400">
-              표시할 영상이 없어요.
+              표시할 플레이리스트가 없어요.
             </p>
           )}
         </section>

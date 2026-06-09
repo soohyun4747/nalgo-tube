@@ -37,6 +37,38 @@ type YouTubeChannelItem = {
 		description: string;
 		thumbnails?: YouTubeThumbnails;
 	};
+	contentDetails?: {
+		relatedPlaylists?: {
+			uploads?: string;
+		};
+	};
+};
+
+type YouTubePlaylistItem = {
+	id: string;
+	snippet: {
+		title: string;
+		description: string;
+		thumbnails?: YouTubeThumbnails;
+		publishedAt: string;
+	};
+	contentDetails?: {
+		itemCount?: number;
+	};
+};
+
+type YouTubePlaylistVideoItem = {
+	id: string;
+	snippet: {
+		title: string;
+		description: string;
+		thumbnails?: YouTubeThumbnails;
+		channelTitle: string;
+		publishedAt: string;
+		resourceId?: {
+			videoId?: string;
+		};
+	};
 };
 
 type SearchVideo = {
@@ -60,6 +92,21 @@ type ChannelDetail = {
 	title: string;
 	description: string;
 	thumbnailUrl: string;
+	uploadsPlaylistId: string | null;
+};
+
+export type PlaylistDetail = {
+	playlistId: string;
+	title: string;
+	description: string;
+	thumbnailUrl: string;
+	publishedAt: string;
+	itemCount: number;
+};
+
+export type PlaylistVideosPage = {
+	videos: SearchVideo[];
+	nextPageToken: string | null;
 };
 
 export type VideoSearchResult = SearchVideo & {
@@ -114,6 +161,16 @@ function getThumbnailUrl(thumbnails?: YouTubeThumbnails) {
 	);
 }
 
+function uniqueByVideoId(videos: SearchVideo[]) {
+	const seen = new Set<string>();
+
+	return videos.filter((video) => {
+		if (seen.has(video.videoId)) return false;
+		seen.add(video.videoId);
+		return true;
+	});
+}
+
 function parseDurationSeconds(duration: string) {
 	const match = duration.match(
 		/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
@@ -138,27 +195,33 @@ function isRegularVideo(item: YouTubeVideoItem) {
 
 async function getRegularVideoIds(videoIds: string[]) {
 	if (videoIds.length === 0) return new Set<string>();
+	const regularVideoIds = new Set<string>();
 
-	const url = buildUrl('/videos', {
-		part: 'contentDetails',
-		id: videoIds.join(','),
-	});
+	for (let i = 0; i < videoIds.length; i += 50) {
+		const ids = videoIds.slice(i, i + 50);
+		const url = buildUrl('/videos', {
+			part: 'contentDetails',
+			id: ids.join(','),
+		});
 
-	const response = await fetch(url, { cache: 'no-store' });
+		const response = await fetch(url, { cache: 'no-store' });
 
-	if (!response.ok) {
-		throw new Error(
-			`YouTube videos request failed with status ${response.status}`
-		);
+		if (!response.ok) {
+			throw new Error(
+				`YouTube videos request failed with status ${response.status}`
+			);
+		}
+
+		const data: { items?: YouTubeVideoItem[] } = await response.json();
+
+		for (const item of data.items ?? []) {
+			if (isRegularVideo(item)) {
+				regularVideoIds.add(item.id);
+			}
+		}
 	}
 
-	const data: { items?: YouTubeVideoItem[] } = await response.json();
-
-	return new Set(
-		(data.items ?? [])
-			.filter(isRegularVideo)
-			.map((item) => item.id)
-	);
+	return regularVideoIds;
 }
 
 export async function searchVideos(q: string): Promise<SearchVideo[]> {
@@ -315,7 +378,7 @@ export async function getChannelDetail(
 	channelId: string
 ): Promise<ChannelDetail | null> {
 	const url = buildUrl('/channels', {
-		part: 'snippet',
+		part: 'snippet,contentDetails',
 		id: channelId.trim(),
 	});
 
@@ -337,43 +400,168 @@ export async function getChannelDetail(
 		title: item.snippet.title,
 		description: item.snippet.description,
 		thumbnailUrl: getThumbnailUrl(item.snippet.thumbnails),
+		uploadsPlaylistId: item.contentDetails?.relatedPlaylists?.uploads ?? null,
 	};
 }
 
-export async function getChannelVideos(channelId: string): Promise<SearchVideo[]> {
-	const url = buildUrl('/search', {
+export async function getChannelPlaylists(
+	channelId: string
+): Promise<PlaylistDetail[]> {
+	const playlists: PlaylistDetail[] = [];
+	let pageToken: string | undefined;
+
+	do {
+		const params: Record<string, string> = {
+			part: 'snippet,contentDetails',
+			channelId: channelId.trim(),
+			maxResults: '50',
+		};
+
+		if (pageToken) {
+			params.pageToken = pageToken;
+		}
+
+		const url = buildUrl('/playlists', params);
+		const response = await fetch(url, { cache: 'no-store' });
+
+		if (!response.ok) {
+			throw new Error(
+				`YouTube playlists request failed with status ${response.status}`
+			);
+		}
+
+		const data: {
+			items?: YouTubePlaylistItem[];
+			nextPageToken?: string;
+		} = await response.json();
+
+		for (const item of data.items ?? []) {
+			playlists.push({
+				playlistId: item.id,
+				title: item.snippet.title,
+				description: item.snippet.description,
+				thumbnailUrl: getThumbnailUrl(item.snippet.thumbnails),
+				publishedAt: item.snippet.publishedAt,
+				itemCount: item.contentDetails?.itemCount ?? 0,
+			});
+		}
+
+		pageToken = data.nextPageToken;
+	} while (pageToken);
+
+	return playlists;
+}
+
+export async function getPlaylistVideos(
+	playlistId: string
+): Promise<SearchVideo[]> {
+	const videos: SearchVideo[] = [];
+	let pageToken: string | undefined;
+
+	do {
+		const page = await getPlaylistVideosPage(playlistId, pageToken);
+		videos.push(...page.videos);
+		pageToken = page.nextPageToken ?? undefined;
+	} while (pageToken);
+
+	return uniqueByVideoId(videos);
+}
+
+export async function getPlaylistVideosPage(
+	playlistId: string,
+	pageToken?: string | null
+): Promise<PlaylistVideosPage> {
+	const params: Record<string, string> = {
 		part: 'snippet',
-		channelId: channelId.trim(),
-		type: 'video',
-		order: 'date',
-		maxResults: '25',
+		playlistId: playlistId.trim(),
+		maxResults: '50',
+	};
+
+	if (pageToken) {
+		params.pageToken = pageToken;
+	}
+
+	const url = buildUrl('/playlistItems', params);
+	const response = await fetch(url, { cache: 'no-store' });
+
+	if (!response.ok) {
+		throw new Error(
+			`YouTube playlist items request failed with status ${response.status}`
+		);
+	}
+
+	const data: {
+		items?: YouTubePlaylistVideoItem[];
+		nextPageToken?: string;
+	} = await response.json();
+	const videos: SearchVideo[] = [];
+
+	for (const item of data.items ?? []) {
+		const videoId = item.snippet.resourceId?.videoId;
+
+		if (!videoId || item.snippet.title === 'Deleted video') {
+			continue;
+		}
+
+		videos.push({
+			kind: 'video',
+			videoId,
+			title: item.snippet.title,
+			thumbnailUrl: getThumbnailUrl(item.snippet.thumbnails),
+			channelTitle: item.snippet.channelTitle,
+			publishedAt: item.snippet.publishedAt,
+		});
+	}
+
+	const regularVideoIds = await getRegularVideoIds(
+		videos.map((video) => video.videoId)
+	);
+
+	return {
+		videos: uniqueByVideoId(
+			videos.filter((video) => regularVideoIds.has(video.videoId))
+		),
+		nextPageToken: data.nextPageToken ?? null,
+	};
+}
+
+export async function getPlaylistDetail(
+	playlistId: string
+): Promise<PlaylistDetail | null> {
+	const url = buildUrl('/playlists', {
+		part: 'snippet,contentDetails',
+		id: playlistId.trim(),
 	});
 
 	const response = await fetch(url, { cache: 'no-store' });
 
 	if (!response.ok) {
 		throw new Error(
-			`YouTube channel videos request failed with status ${response.status}`
+			`YouTube playlist request failed with status ${response.status}`
 		);
 	}
 
-	const data: { items?: YouTubeSearchItem[] } = await response.json();
-	const items = data.items ?? [];
-	const videoIds = items
-		.map((item) => item.id.videoId)
-		.filter((videoId): videoId is string => Boolean(videoId));
-	const regularVideoIds = await getRegularVideoIds(videoIds);
+	const data: { items?: YouTubePlaylistItem[] } = await response.json();
+	const item = data.items?.[0];
 
-	return items
-		.filter(
-			(item): item is YouTubeSearchItem & { id: { videoId: string } } =>
-				Boolean(item.id.videoId && regularVideoIds.has(item.id.videoId))
-		)
-		.map((item) => ({
-			videoId: item.id.videoId,
-			title: item.snippet.title,
-			thumbnailUrl: getThumbnailUrl(item.snippet.thumbnails),
-			channelTitle: item.snippet.channelTitle,
-			publishedAt: item.snippet.publishedAt,
-		}));
+	if (!item) return null;
+
+	return {
+		playlistId: item.id,
+		title: item.snippet.title,
+		description: item.snippet.description,
+		thumbnailUrl: getThumbnailUrl(item.snippet.thumbnails),
+		publishedAt: item.snippet.publishedAt,
+		itemCount: item.contentDetails?.itemCount ?? 0,
+	};
+}
+
+export async function getChannelVideos(channelId: string): Promise<SearchVideo[]> {
+	const channel = await getChannelDetail(channelId);
+
+	if (!channel?.uploadsPlaylistId) {
+		return [];
+	}
+
+	return getPlaylistVideos(channel.uploadsPlaylistId);
 }

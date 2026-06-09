@@ -34,6 +34,7 @@ type SearchResult = VideoResult | ChannelResult;
 type SearchResponse = {
   results: SearchResult[];
   nextPageToken: string | null;
+  error?: string;
 };
 
 function formatDate(iso: string) {
@@ -64,7 +65,13 @@ async function searchClient(
     throw new Error('Search request failed');
   }
 
-  return res.json();
+  const data: SearchResponse = await res.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
 }
 
 function resultKey(result: SearchResult) {

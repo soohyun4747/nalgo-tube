@@ -14,11 +14,17 @@ export async function GET(request: Request) {
 		const result = await searchYouTube(q, pageToken);
 		return NextResponse.json(result);
 	} catch (error) {
-		console.error('Search API failed:', error);
+		const message =
+			error instanceof Error ? error.message : 'Unknown search API error';
+		console.warn('Search API failed:', message);
 
 		return NextResponse.json(
-			{ message: '검색 중 오류가 발생했습니다.' },
-			{ status: 500 }
+			{
+				error: '검색 중 오류가 발생했습니다.',
+				results: [],
+				nextPageToken: null,
+			},
+			{ status: 200 }
 		);
 	}
 }

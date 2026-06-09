@@ -93,7 +93,8 @@ function getApiKey() {
 }
 
 function buildUrl(path: string, params: Record<string, string>): string {
-	const url = new URL(path, YOUTUBE_API_BASE);
+	const normalizedPath = path.replace(/^\/+/, '');
+	const url = new URL(`${YOUTUBE_API_BASE}/${normalizedPath}`);
 
 	Object.entries(params).forEach(([key, value]) => {
 		url.searchParams.set(key, value);

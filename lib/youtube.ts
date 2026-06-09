@@ -40,6 +40,7 @@ type YouTubeChannelItem = {
 };
 
 type SearchVideo = {
+	kind?: 'video';
 	videoId: string;
 	title: string;
 	thumbnailUrl: string;
@@ -61,11 +62,31 @@ type ChannelDetail = {
 	thumbnailUrl: string;
 };
 
+export type VideoSearchResult = SearchVideo & {
+	kind: 'video';
+};
+
+export type ChannelSearchResult = {
+	kind: 'channel';
+	channelId: string;
+	title: string;
+	description: string;
+	thumbnailUrl: string;
+};
+
+export type YouTubeSearchResult = VideoSearchResult | ChannelSearchResult;
+
+export type YouTubeSearchResponse = {
+	results: YouTubeSearchResult[];
+	nextPageToken: string | null;
+};
+
 function getApiKey() {
-	const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+	const apiKey =
+		process.env.YOUTUBE_API_KEY ?? process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
 	if (!apiKey) {
-		throw new Error('NEXT_PUBLIC_YOUTUBE_API_KEY is not set in environment variables');
+		throw new Error('YouTube API key is not set in environment variables');
 	}
 
 	return apiKey;
@@ -174,6 +195,7 @@ export async function searchVideos(q: string): Promise<SearchVideo[]> {
 			} = item;
 
 			return {
+				kind: 'video',
 				videoId,
 				title,
 				thumbnailUrl: getThumbnailUrl(thumbnails),
@@ -181,6 +203,73 @@ export async function searchVideos(q: string): Promise<SearchVideo[]> {
 				publishedAt,
 			};
 		});
+}
+
+export async function searchYouTube(
+	q: string,
+	pageToken?: string | null
+): Promise<YouTubeSearchResponse> {
+	const params: Record<string, string> = {
+		part: 'snippet',
+		type: 'video,channel',
+		maxResults: '12',
+		q,
+	};
+
+	if (pageToken) {
+		params.pageToken = pageToken;
+	}
+
+	const url = buildUrl('/search', params);
+	const response = await fetch(url, { cache: 'no-store' });
+
+	if (!response.ok) {
+		throw new Error(
+			`YouTube search request failed with status ${response.status}`
+		);
+	}
+
+	const data: { items?: YouTubeSearchItem[]; nextPageToken?: string } =
+		await response.json();
+	const items = data.items ?? [];
+	const videoIds = items
+		.map((item) => item.id.videoId)
+		.filter((videoId): videoId is string => Boolean(videoId));
+	const regularVideoIds = await getRegularVideoIds(videoIds);
+
+	const results = items
+		.map((item): YouTubeSearchResult | null => {
+			const { id, snippet } = item;
+
+			if (id.channelId) {
+				return {
+					kind: 'channel',
+					channelId: id.channelId,
+					title: snippet.title,
+					description: snippet.description ?? '',
+					thumbnailUrl: getThumbnailUrl(snippet.thumbnails),
+				};
+			}
+
+			if (id.videoId && regularVideoIds.has(id.videoId)) {
+				return {
+					kind: 'video',
+					videoId: id.videoId,
+					title: snippet.title,
+					thumbnailUrl: getThumbnailUrl(snippet.thumbnails),
+					channelTitle: snippet.channelTitle,
+					publishedAt: snippet.publishedAt,
+				};
+			}
+
+			return null;
+		})
+		.filter((result): result is YouTubeSearchResult => Boolean(result));
+
+	return {
+		results,
+		nextPageToken: data.nextPageToken ?? null,
+	};
 }
 
 export async function getVideoDetail(id: string): Promise<VideoDetail | null> {

@@ -36,25 +36,6 @@ type SearchResponse = {
   nextPageToken: string | null;
 };
 
-type YouTubeSearchItem = {
-  id?: {
-    videoId?: string;
-    channelId?: string;
-  };
-  snippet?: {
-    title?: string;
-    description?: string;
-    thumbnails?: {
-      medium?: { url?: string };
-      default?: { url?: string };
-    };
-    channelTitle?: string;
-    publishedAt?: string;
-  };
-};
-
-const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
-
 function formatDate(iso: string) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -65,133 +46,25 @@ function formatDate(iso: string) {
   });
 }
 
-function parseDurationSeconds(duration: string) {
-  const match = duration.match(
-    /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
-  );
-
-  if (!match) return 0;
-
-  const [, days = '0', hours = '0', minutes = '0', seconds = '0'] = match;
-
-  return (
-    Number(days) * 86400 +
-    Number(hours) * 3600 +
-    Number(minutes) * 60 +
-    Number(seconds)
-  );
-}
-
-async function getNonShortVideoIds(videoIds: string[]) {
-  if (videoIds.length === 0 || !API_KEY) return new Set<string>();
-
-  const params = new URLSearchParams({
-    key: API_KEY,
-    part: 'contentDetails',
-    id: videoIds.join(','),
-  });
-
-  const res = await fetch(
-    'https://www.googleapis.com/youtube/v3/videos?' + params.toString()
-  );
-
-  if (!res.ok) {
-    console.error('YouTube video detail API error', await res.text());
-    return new Set(videoIds);
-  }
-
-  const data = await res.json();
-  const nonShortIds = new Set<string>();
-
-  for (const item of data.items ?? []) {
-    const seconds = parseDurationSeconds(item.contentDetails?.duration ?? '');
-    if (seconds > 60) {
-      nonShortIds.add(item.id);
-    }
-  }
-
-  return nonShortIds;
-}
-
 async function searchClient(
   query: string,
   pageToken?: string | null
 ): Promise<SearchResponse> {
-  if (!API_KEY) {
-    console.warn('NEXT_PUBLIC_YOUTUBE_API_KEY 가 설정되지 않았습니다.');
-    return { results: [], nextPageToken: null };
-  }
-
   const params = new URLSearchParams({
-    key: API_KEY,
-    part: 'snippet',
     q: query,
-    maxResults: '12',
-    type: 'video,channel',
   });
 
   if (pageToken) {
     params.set('pageToken', pageToken);
   }
 
-  const res = await fetch(
-    'https://www.googleapis.com/youtube/v3/search?' + params.toString()
-  );
+  const res = await fetch('/api/search?' + params.toString());
 
   if (!res.ok) {
-    console.error('YouTube API error', await res.text());
-    return { results: [], nextPageToken: null };
+    throw new Error('Search request failed');
   }
 
-  const data: { items?: YouTubeSearchItem[]; nextPageToken?: string } =
-    await res.json();
-  const items = data.items ?? [];
-  const videoIds = items
-    .map((item) => item.id?.videoId)
-    .filter((videoId: unknown): videoId is string => Boolean(videoId));
-  const nonShortIds = await getNonShortVideoIds(videoIds);
-
-  const results = items
-    .map((item): SearchResult | null => {
-      const snippet = item.snippet ?? {};
-
-      if (item.id?.channelId) {
-        return {
-          kind: 'channel',
-          channelId: item.id.channelId,
-          title: snippet.title ?? '',
-          description: snippet.description ?? '',
-          thumbnailUrl:
-            snippet.thumbnails?.medium?.url ??
-            snippet.thumbnails?.default?.url ??
-            null,
-        };
-      }
-
-      if (item.id?.videoId && nonShortIds.has(item.id.videoId)) {
-        return {
-          kind: 'video',
-          videoId: item.id.videoId,
-          title: snippet.title ?? '',
-          thumbnailUrl:
-            snippet.thumbnails?.medium?.url ??
-            snippet.thumbnails?.default?.url ??
-            null,
-          channelTitle: snippet.channelTitle ?? '',
-          publishedAt: snippet.publishedAt ?? '',
-        };
-      }
-
-      return null;
-    })
-    .filter((result: SearchResult | null): result is SearchResult =>
-      Boolean(result)
-    );
-
-  return {
-    results,
-    nextPageToken: data.nextPageToken ?? null,
-  };
+  return res.json();
 }
 
 function resultKey(result: SearchResult) {
@@ -244,7 +117,7 @@ function HomeContent() {
       });
       setNextPageToken(newNextPageToken);
     } catch (err) {
-      console.error(err);
+      console.warn(err);
       setErrorMsg('더 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoadingMore(false);
@@ -271,7 +144,7 @@ function HomeContent() {
         setNextPageToken(newNextPageToken);
       })
       .catch((err) => {
-        console.error(err);
+        console.warn(err);
         if (cancelled) return;
         setErrorMsg('검색 중 오류가 발생했습니다.');
       })

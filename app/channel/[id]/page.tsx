@@ -6,6 +6,7 @@ import {
   getChannelPlaylists,
   getPlaylistVideosPage,
 } from '@/lib/youtube';
+import PlaylistPreviewSection from '@/app/components/playlist-preview-section';
 import VideoList from '@/app/components/video-list';
 
 export default async function ChannelPage({
@@ -24,7 +25,7 @@ export default async function ChannelPage({
     channel.uploadsPlaylistId
       ? getPlaylistVideosPage(channel.uploadsPlaylistId)
       : { videos: [], nextPageToken: null },
-    getChannelPlaylists(id),
+    getChannelPlaylists(id, 20),
   ]);
 
   return (
@@ -78,45 +79,14 @@ export default async function ChannelPage({
               </h2>
             </div>
 
-            <ul className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-2">
+            <div className="space-y-6">
               {playlists.map((playlist) => (
-                <li
+                <PlaylistPreviewSection
                   key={playlist.playlistId}
-                  className="w-64 shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950"
-                >
-                  <Link
-                    href={`/playlist/${playlist.playlistId}`}
-                    className="block h-full transition hover:bg-zinc-900/70"
-                  >
-                    <div className="aspect-video overflow-hidden bg-zinc-900">
-                      {playlist.thumbnailUrl ? (
-                        <img
-                          src={playlist.thumbnailUrl}
-                          alt={playlist.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-zinc-500">
-                          No Thumbnail
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-3 p-4">
-                      <h3 className="text-sm font-semibold leading-5 text-zinc-50 line-clamp-2">
-                        {he.decode(playlist.title)}
-                      </h3>
-                      <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
-                        <span>{playlist.itemCount}개 영상</span>
-                        <span className="rounded-md bg-emerald-500 px-2.5 py-1 font-semibold text-zinc-950">
-                          모두 재생
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </li>
+                  playlist={playlist}
+                />
               ))}
-            </ul>
+            </div>
           </section>
         )}
 

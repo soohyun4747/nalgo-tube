@@ -5,13 +5,14 @@ export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const playlistId = searchParams.get('playlistId')?.trim() ?? '';
 	const pageToken = searchParams.get('pageToken');
+	const maxResults = Number(searchParams.get('maxResults') ?? '50');
 
 	if (!playlistId) {
 		return NextResponse.json({ videos: [], nextPageToken: null });
 	}
 
 	try {
-		const result = await getPlaylistVideosPage(playlistId, pageToken);
+		const result = await getPlaylistVideosPage(playlistId, pageToken, maxResults);
 		return NextResponse.json(result);
 	} catch (error) {
 		const message =

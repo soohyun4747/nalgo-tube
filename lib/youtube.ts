@@ -190,7 +190,18 @@ function parseDurationSeconds(duration: string) {
 
 function isRegularVideo(item: YouTubeVideoItem) {
 	const seconds = parseDurationSeconds(item.contentDetails?.duration ?? '');
-	return seconds > 60;
+	return seconds > 60 && !isShortsMetadata(item.snippet);
+}
+
+function isShortsMetadata(snippet?: { title?: string; description?: string }) {
+	const text = `${snippet?.title ?? ''} ${snippet?.description ?? ''}`.toLowerCase();
+	return (
+		text.includes('#shorts') ||
+		text.includes('#short') ||
+		text.includes('youtube shorts') ||
+		text.includes('yt shorts') ||
+		text.includes('쇼츠')
+	);
 }
 
 async function getRegularVideoIds(videoIds: string[]) {
@@ -198,11 +209,11 @@ async function getRegularVideoIds(videoIds: string[]) {
 	const regularVideoIds = new Set<string>();
 
 	for (let i = 0; i < videoIds.length; i += 50) {
-		const ids = videoIds.slice(i, i + 50);
-		const url = buildUrl('/videos', {
-			part: 'contentDetails',
-			id: ids.join(','),
-		});
+			const ids = videoIds.slice(i, i + 50);
+			const url = buildUrl('/videos', {
+				part: 'contentDetails,snippet',
+				id: ids.join(','),
+			});
 
 		const response = await fetch(url, { cache: 'no-store' });
 
@@ -405,7 +416,8 @@ export async function getChannelDetail(
 }
 
 export async function getChannelPlaylists(
-	channelId: string
+	channelId: string,
+	limit?: number
 ): Promise<PlaylistDetail[]> {
 	const playlists: PlaylistDetail[] = [];
 	let pageToken: string | undefined;
@@ -414,7 +426,7 @@ export async function getChannelPlaylists(
 		const params: Record<string, string> = {
 			part: 'snippet,contentDetails',
 			channelId: channelId.trim(),
-			maxResults: '50',
+			maxResults: String(Math.min(Math.max(limit ?? 50, 1), 50)),
 		};
 
 		if (pageToken) {
@@ -447,9 +459,9 @@ export async function getChannelPlaylists(
 		}
 
 		pageToken = data.nextPageToken;
-	} while (pageToken);
+	} while (pageToken && (!limit || playlists.length < limit));
 
-	return playlists;
+	return limit ? playlists.slice(0, limit) : playlists;
 }
 
 export async function getPlaylistVideos(
@@ -469,12 +481,14 @@ export async function getPlaylistVideos(
 
 export async function getPlaylistVideosPage(
 	playlistId: string,
-	pageToken?: string | null
+	pageToken?: string | null,
+	maxResults = 50
 ): Promise<PlaylistVideosPage> {
+	const safeMaxResults = Number.isFinite(maxResults) ? maxResults : 50;
 	const params: Record<string, string> = {
 		part: 'snippet',
 		playlistId: playlistId.trim(),
-		maxResults: '50',
+		maxResults: String(Math.min(Math.max(safeMaxResults, 1), 50)),
 	};
 
 	if (pageToken) {
@@ -499,7 +513,11 @@ export async function getPlaylistVideosPage(
 	for (const item of data.items ?? []) {
 		const videoId = item.snippet.resourceId?.videoId;
 
-		if (!videoId || item.snippet.title === 'Deleted video') {
+		if (
+			!videoId ||
+			item.snippet.title === 'Deleted video' ||
+			isShortsMetadata(item.snippet)
+		) {
 			continue;
 		}
 

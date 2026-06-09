@@ -15,9 +15,9 @@ function formatDate(iso: string) {
 export default async function WatchPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const { id } = await params;
   const video = await getVideoDetail(id);
 
   if (!video) {

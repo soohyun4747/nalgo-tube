@@ -25,7 +25,8 @@ function formatDate(iso: string) {
   });
 }
 
-async function searchVideosClient(query: string): Promise<Video[]> {
+async function searchVideosClient(query: string): Promise<Video[]> {  
+
   if (!API_KEY) {
     console.warn('NEXT_PUBLIC_YOUTUBE_API_KEY 가 설정되지 않았습니다.');
     return [];
@@ -119,10 +120,10 @@ export default function Home() {
             Nalgo Tube
           </p>
           <h1 className="text-2xl font-bold text-zinc-50">영상 검색</h1>
-          <p className="text-sm text-zinc-400">
+          {/* <p className="text-sm text-zinc-400">
             주소창의 <code className="text-emerald-400">?q=키워드</code> 값을
             사용해 클라이언트에서 유튜브 영상을 검색합니다.
-          </p>
+          </p> */}
         </div>
 
         {/* form은 client side로 처리 */}
@@ -146,7 +147,7 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200"
+            className="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 min-w-20"
           >
             검색
           </button>

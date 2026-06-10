@@ -96,10 +96,6 @@ function HomeContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const hasQuery = useMemo(() => trimmedQuery.length > 0, [trimmedQuery]);
-  const videoCount = searchResults.filter(
-    (result) => result.kind === 'video'
-  ).length;
-
   useEffect(() => {
     setQueryInput(trimmedQuery);
   }, [trimmedQuery]);

@@ -269,9 +269,6 @@ function HomeContent() {
                   <p className="text-lg font-semibold text-slate-950">
                     &quot;{trimmedQuery}&quot;
                   </p>
-                  <p className="text-sm text-slate-500">
-                    쇼츠와 릴스를 제외한 영상 {videoCount}개와 채널을 찾았어요.
-                  </p>
                 </div>
 
                 <ul className="space-y-4">

@@ -98,9 +98,6 @@ export default async function ChannelPage({
             <h2 className="text-xl font-semibold text-slate-950">
               채널 전체 영상
             </h2>
-            <p className="text-sm text-slate-500">
-              쇼츠와 릴스를 제외한 전체 업로드를 계속 불러올 수 있어요.
-            </p>
           </div>
 
           {channel.uploadsPlaylistId ? (

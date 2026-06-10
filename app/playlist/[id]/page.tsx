@@ -42,9 +42,6 @@ export default async function PlaylistPage({
                 {he.decode(playlist.description)}
               </p>
             )}
-            <p className="text-sm text-slate-500">
-              쇼츠와 릴스를 제외한 영상을 계속 불러올 수 있어요.
-            </p>
           </div>
 
           <div className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-inner">

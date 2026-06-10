@@ -1,11 +1,11 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import he from 'he';
 import {
   getChannelDetail,
-  getChannelPlaylists,
   getPlaylistVideosPage,
+  getVisibleChannelPlaylists,
 } from '@/lib/youtube';
+import BackButton from '@/app/components/back-button';
 import PlaylistPreviewSection from '@/app/components/playlist-preview-section';
 import VideoList from '@/app/components/video-list';
 
@@ -25,18 +25,13 @@ export default async function ChannelPage({
     channel.uploadsPlaylistId
       ? getPlaylistVideosPage(channel.uploadsPlaylistId)
       : { videos: [], nextPageToken: null },
-    getChannelPlaylists(id, 20),
+    getVisibleChannelPlaylists(id, 20),
   ]);
 
   return (
     <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
-        <Link
-          href="/"
-          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-500"
-        >
-          ← 검색으로 돌아가기
-        </Link>
+        <BackButton />
 
         <section className="flex flex-col gap-5 border-b border-slate-200 pb-8 sm:flex-row sm:items-center">
           <div className="h-28 w-28 shrink-0 overflow-hidden rounded-full border border-blue-200 bg-white">

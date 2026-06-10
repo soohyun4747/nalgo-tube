@@ -464,6 +464,41 @@ export async function getChannelPlaylists(
 	return limit ? playlists.slice(0, limit) : playlists;
 }
 
+async function playlistHasVisibleVideos(playlistId: string) {
+	let pageToken: string | null | undefined;
+	let checkedPages = 0;
+
+	do {
+		const page = await getPlaylistVideosPage(playlistId, pageToken, 25);
+		if (page.videos.length > 0) return true;
+
+		pageToken = page.nextPageToken;
+		checkedPages += 1;
+	} while (pageToken && checkedPages < 3);
+
+	return false;
+}
+
+export async function getVisibleChannelPlaylists(
+	channelId: string,
+	limit?: number
+): Promise<PlaylistDetail[]> {
+	const playlists = await getChannelPlaylists(channelId, limit);
+	const visiblePlaylists = await Promise.all(
+		playlists
+			.filter((playlist) => playlist.itemCount > 0)
+			.map(async (playlist) =>
+				(await playlistHasVisibleVideos(playlist.playlistId))
+					? playlist
+					: null
+			)
+	);
+
+	return visiblePlaylists.filter(
+		(playlist): playlist is PlaylistDetail => Boolean(playlist)
+	);
+}
+
 export async function getPlaylistVideos(
 	playlistId: string
 ): Promise<SearchVideo[]> {

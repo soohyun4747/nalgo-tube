@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import BackButton from "@/app/components/back-button";
+import YouTubeEmbed from "@/app/components/youtube-embed";
 import { getVideoDetail } from "@/lib/youtube";
 
 function formatDate(iso: string) {
@@ -27,22 +28,12 @@ export default async function WatchPage({
   return (
     <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
-        <Link
-          href="/"
-          className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-500"
-        >
-          ← 뒤로가기
-        </Link>
+        <BackButton />
 
-        <div className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-inner">
-          <iframe
-            className="h-full w-full"
-            src={`https://www.youtube.com/embed/${id}`}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </div>
+        <YouTubeEmbed
+          src={`https://www.youtube.com/embed/${id}`}
+          title={video.title}
+        />
 
         <div className="space-y-3">
           <h1 className="text-2xl font-bold leading-tight text-slate-950">

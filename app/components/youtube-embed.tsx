@@ -18,11 +18,11 @@ export default function YouTubeEmbed({ src, title }: YouTubeEmbedProps) {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-auto absolute right-0 top-0 h-16 w-44 bg-gradient-to-l from-black via-black/95 to-black/0"
+        className="pointer-events-auto absolute top-0 left-0 h-[22%] w-[60%] max-h-16 max-w-80 bg-transparent"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-auto absolute bottom-0 right-0 h-12 w-40 bg-gradient-to-l from-black via-black/95 to-black/0"
+        className="pointer-events-auto absolute bottom-0 right-0 h-[30%] w-[70%] max-h-16 max-w-80 bg-transparent"
       />
     </div>
   );

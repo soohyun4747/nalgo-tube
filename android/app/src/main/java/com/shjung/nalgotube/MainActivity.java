@@ -1,4 +1,4 @@
-package com.shjung.nalgotube;
+package com.shjung.nomoretube;
 
 import com.getcapacitor.BridgeActivity;
 

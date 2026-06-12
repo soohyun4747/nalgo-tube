@@ -31,13 +31,13 @@ export default function HorizontalScroll({
         type="button"
         aria-label={`${label} 왼쪽으로 이동`}
         onClick={() => scrollByPage(-1)}
-        className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+        className="md:block hidden absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
       >
         ‹
       </button>
       <div
         ref={scrollerRef}
-        className={`scrollbar-thin -mx-6 flex gap-4 overflow-x-auto scroll-smooth px-12 pb-2 ${className}`}
+        className={`scrollbar-thin -mx-6 flex gap-4 overflow-x-auto scroll-smooth px-6 md:px-12 pb-2 ${className}`}
       >
         {children}
       </div>
@@ -45,7 +45,7 @@ export default function HorizontalScroll({
         type="button"
         aria-label={`${label} 오른쪽으로 이동`}
         onClick={() => scrollByPage(1)}
-        className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+        className="md:block hidden absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300 bg-white/95 text-xl font-semibold text-slate-950 shadow-lg transition hover:border-blue-500 hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
       >
         ›
       </button>

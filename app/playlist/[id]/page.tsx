@@ -22,7 +22,7 @@ export default async function PlaylistPage({
 
   return (
     <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 md:rounded-2xl md:border border-slate-200 bg-white p-6 md:shadow-lg">
         <BackButton />
 
         <section className="space-y-5">

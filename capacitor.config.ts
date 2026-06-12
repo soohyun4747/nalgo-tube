@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'NoMoreTube',
   webDir: 'out',
   server: {
-    url: 'https://nalgo-tube.soohyun4747.workers.dev/',
+    url: 'https://no-more-tube.soohyun4747.workers.dev/',
     cleartext: false,
   },
 };

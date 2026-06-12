@@ -26,8 +26,8 @@ export default async function WatchPage({
   }
 
   return (
-    <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+    <main className="min-h-screen bg-white md:px-6 md:py-10 text-slate-950">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 md:rounded-2xl md:border border-slate-200 bg-white p-6 md:shadow-lg">
         <BackButton />
 
         <YouTubeEmbed
@@ -36,7 +36,7 @@ export default async function WatchPage({
         />
 
         <div className="space-y-3">
-          <h1 className="text-2xl font-bold leading-tight text-slate-950">
+          <h1 className="md:text-2xl font-bold leading-tight text-slate-950">
             {video.title}
           </h1>
           <p className="text-sm text-slate-500">

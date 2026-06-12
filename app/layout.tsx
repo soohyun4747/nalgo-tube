@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nalgo Tube",
+  title: "No More Tube",
   description: "Next.js app with Tailwind CSS",
 };
 

@@ -29,8 +29,8 @@ export default async function ChannelPage({
   ]);
 
   return (
-    <main className="min-h-screen bg-white px-6 py-10 text-slate-950">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+    <main className="min-h-screen bg-white md:px-6 md:py-10 text-slate-950">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 md:rounded-2xl md:border border-slate-200 bg-white p-6 md:shadow-lg">
         <BackButton />
 
         <section className="flex flex-col gap-5 border-b border-slate-200 pb-8 sm:flex-row sm:items-center">
